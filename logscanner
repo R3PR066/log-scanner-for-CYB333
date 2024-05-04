@@ -1,0 +1,63 @@
+import os
+import re
+
+def find_log_files():
+    # Finds all log files in the system.
+    log_files = []
+    try:
+        for root, dirs, files in os.walk("/", topdown=False):
+            for file in files:
+                if file.endswith(".log"):
+                    log_files.append(os.path.join(root, file))
+    except Exception as e:
+        print(f"An error occurred while searching for log files: {e}")
+    return log_files
+
+def select_log_file(log_files):
+    # Prompts the user to select a log file from the list of found log files.
+    selected_file = None
+    try:
+        print("Found log files:")
+        for idx, log_file in enumerate(log_files, start=1):
+            print(f"{idx}. {log_file}")
+        while True:
+            try:
+                choice = int(input("Select a log file to scan (enter the corresponding number): "))
+                if 1 <= choice <= len(log_files):
+                    selected_file = log_files[choice - 1]
+                    break
+                else:
+                    print("Invalid choice. Please enter a valid number.")
+            except ValueError:
+                print("Invalid input. Please enter a number.")
+    except Exception as e:
+        print(f"An error occurred while selecting a log file: {e}")
+    return selected_file
+
+def analyze_log_file(log_file_path):
+    # Analyzes the selected log file for security breaches.
+    try:
+        pattern = r'error'
+        with open(log_file_path, 'r') as file:
+            log_data = file.read()
+            matches = re.findall(pattern, log_data, re.IGNORECASE)
+            if matches:
+                print("Potential security breaches found in the log file:")
+                for match in matches:
+                    print("- ", match)
+            else:
+                print("No potential security breaches found in the log file.")
+    except FileNotFoundError:
+        print("File not found. Please provide a valid log file path.")
+    except Exception as e:
+        print(f"An error occurred while analyzing the log file: {e}")
+
+if __name__ == "__main__":
+    log_files = find_log_files()
+    if not log_files:
+        print("No log files found on the system.")
+    else:
+        selected_log_file = select_log_file(log_files)
+        if selected_log_file:
+            print(f"Scanning log file: {selected_log_file}")
+            analyze_log_file(selected_log_file)
